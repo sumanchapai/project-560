@@ -1,0 +1,6 @@
+{
+  "singleQuote": false,
+  "proseWrap": "always",
+  "printWidth": 80,
+  "useTabs": false
+}
