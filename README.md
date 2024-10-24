@@ -15,4 +15,6 @@ if you run `dune exec bin/main.exe`, it will print the AST.
 
 You should be able to just clone the repo and run the dune commands. I use the
 watch mode which just rebuilds and rexecutes when you make changes:
-`dune exec bin/main.exe -w`
+`dune exec bin/main.exe -w`. The `exec` command is going to take care of
+building as well therefore the first time your run it, there might be a lot of
+output from buliding `ocaml_parser`.
