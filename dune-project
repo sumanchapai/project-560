@@ -21,5 +21,12 @@
  (description "A project that adds refinement type checking using PPX and Z3.")
  (depends
   (ocaml (>= 5.2))
-  (dune (>= 3.0))))
+  (dune (>= 3.0)))
+ (allow_empty)
+ )
 
+(package
+ (name ppx_refinements)
+ (synopsis "A PPX rewriter for refinement types")
+ (description "Refinement types PPX rewriter")
+ )

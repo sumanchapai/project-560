@@ -31,16 +31,17 @@ let node_builder ~loc ~path:_ var var_type predicate =
   }
 
 (* In place of type annotations, users can express
-   refinement types as: [%refinement (x:int, x > 0)]
+   refinement types as: [%refinement (<varname>:<type>), <predicate>]
 
    For example:
    let x = 10; could be written as
+   let x : [%refinement (v:int), v > 0] = 10
+   Note that
    let x : [%refinement (v:int, v > 0)] = 10
+   is not valid, as the (name:type) binding have to be inside parenthsis in OCaml
 
-   VC: v = 10 => v > 0
-
-   let x : int = 10
-   let x : int [@refinement let  v = v > 0]
+   The above example would generate verification condition perhaps like:
+   v = 10 => v > 0
 
    Or
    type nat = int
