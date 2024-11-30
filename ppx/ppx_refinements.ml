@@ -1,7 +1,5 @@
 open Ppxlib
 
-let log = true
-
 (* Helper function for the refinement extension *)
 let node_builder ~loc ~path:_ var var_type predicate =
   (* Attach refinement as an attribute *)
