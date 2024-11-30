@@ -37,7 +37,12 @@ let node_builder ~loc ~path:_ var var_type predicate =
 
    For example:
    let x = 10; could be written as
-   let x : [%refinement (v:int, v > 10)] = 10
+   let x : [%refinement (v:int, v > 0)] = 10
+
+   VC: v = 10 => v > 0
+
+   let x : int = 10
+   let x : int [@refinement let  v = v > 0]
 
    Or
    type nat = int
@@ -47,7 +52,13 @@ let node_builder ~loc ~path:_ var var_type predicate =
    Or
    let sum a b = a + b;
    could be written as:
-   let sum (a : int), (b : int) : [%refinement (v:int, v >= a && v >= b)]
+   let sum (a : int), (b : int) : [%refinement (v:int, v >= a && v >= b)] = a + b
+
+   VC:
+   a = var('int') and
+   b = var('int') and
+   v = a + b => (v >= a and v >= b)
+
 
    etc. etc.
 *)
