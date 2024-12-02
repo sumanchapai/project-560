@@ -1,26 +1,28 @@
 (lang dune 3.16)
 
-
-(name project560)
+(name refinement_project)
 
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github sumanchapai/project-560))
 
-(authors "Author Name")
+(authors "Suman", "Rachit" "Asha")
 
-(maintainers "Maintainer Name")
+(maintainers "Suman Chapai <sumanchapai@gmail.com>")
 
-(license LICENSE)
+(license MIT)
 
-(documentation https://url/to/documentation)
+(documentation https://github.com/sumanchapai/project-560)
 
 (package
- (name project560)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
-
+ (name refinement_project)
+ (synopsis "A framework for refinement types in OCaml.")
+ (description "A project that adds refinement type checking using PPX and Z3.")
+ (depends
+  (ocaml (>= 5.2))
+  (dune (>= 3.0))
+  (ppxlib (>= 0.28))
+  (z3 (>= 4.13)))
+ (allow_empty)
+ )
