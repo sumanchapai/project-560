@@ -1,2 +1,3 @@
 (library
- (name refinement_checker))
+ (name type_checker)
+ (libraries ppxlib z3))

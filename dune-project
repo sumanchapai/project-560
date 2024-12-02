@@ -22,6 +22,7 @@
  (depends
   (ocaml (>= 5.2))
   (dune (>= 3.0))
+  (ounit2 (>= 2.2.7))
   (ppxlib (>= 0.28))
   (z3 (>= 4.13)))
  (allow_empty)
