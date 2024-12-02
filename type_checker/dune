@@ -1,2 +1,15 @@
-(library
- (name refinement_checker))
+(executable
+ (name type_checker)
+ (modules type_checker)
+ (libraries ppxlib z3))
+
+(executable
+ (name combined_checker)
+ (modules combined_checker type_checker)
+ (libraries ppxlib z3))
+
+(test
+ (name type_checker_test)
+ (modules test_combined_checker)
+ (libraries ppxlib z3 alcotest))
+
