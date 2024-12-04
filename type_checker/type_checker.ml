@@ -1,4 +1,5 @@
 open Z3
+open Parsetree
 (* This library is supposed to take an OCaml programs with refinement types 
    added to it in the form of attributes, and report whether or not the program
    type checks. If the program doesn't type check, then it returns the errors
@@ -76,39 +77,20 @@ let is_sat (_constraints : Expr.expr list) : bool =
 
 
 let handle_structure_item (_str_item: Parsetree.structure_item) = 
-  match _str_item with
-  | Pexp_ident ident ->
-    fprintf fmt "Identifier: %s\n" (Longident.last ident.txt)
-  | Pexp_constant const ->
-      fprintf fmt "Constant: %s\n" (string_of_constant const)
-  | Pexp_let (_rec_flag, bindings, body) ->
-        fprintf fmt "Let Expression:\n";
-        List.iter
-          (fun vb ->
-            fprintf fmt "  Value Binding:\n";
-            fprintf fmt "    Pattern:\n";
-            traverse_and_print_pattern (formatter_with_indent fmt 6) vb.pvb_pat;
-            fprintf fmt "    Expression:\n";
-            traverse_and_print_expr (formatter_with_indent fmt 6) vb.pvb_expr)
-          bindings;
-        fprintf fmt "  Body:\n";
-        traverse_and_print_expr (formatter_with_indent fmt 4) body
-  | Pexp_apply (func, args) ->
-      fprintf fmt "Function Application:\n";
-      fprintf fmt "  Function:\n";
-      traverse_and_print_expr (formatter_with_indent fmt 4) func;
-      List.iter
-        (fun (_label, arg) ->
-          fprintf fmt "  Argument:\n";
-          traverse_and_print_expr (formatter_with_indent fmt 4) arg)
-        args
-  | Pexp_tuple exprs ->
-      fprintf fmt "Tuple:\n";
-      List.iter
-        (fun e ->
-          traverse_and_print_expr (formatter_with_indent fmt 4) e)
-        exprs
-  | _ ->
+  match _str_item.pstr_desc with
+    | Pexp_ident ident ->
+      fprintf fmt "Identifier: %s\n" (Longident.last ident.txt)
+    | Pexp_constant const ->
+        fprintf fmt "Constant: %s\n" (string_of_constant const)
+    | Pexp_let (_rec_flag, bindings, body) ->
+          fprintf fmt "Let Expression:\n";
+
+    | Pexp_apply (func, args) ->
+        fprintf fmt "Function Application:\n";
+        fprintf fmt "  Function:\n";
+    | Pexp_tuple exprs ->
+        fprintf fmt "Tuple:\n";
+    | _ ->
     (* 
       TODO: 
 
