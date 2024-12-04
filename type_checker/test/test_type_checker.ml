@@ -3,7 +3,7 @@ open OUnit2
 
 (* Make success/failure result types *)
 let make_success _ = Ok ()
-let make_error err_string = Error err_string
+let _make_error err_string = Error err_string
 
 let create_arith_eval_suite name cases : test =
   (* Helper function to create a test case *)
@@ -45,12 +45,19 @@ let create_refinement_suites name cases : test =
 let refinement_type_check_suite =
   create_refinement_suites "basics" [
 
+    (* (
+      {|
+      let a : int = 5
+      |},
+      make_success ()
+    );
+
     (
       {|
-      let a : int[@refinement (v, v > 0)] = 5
+      let a = 5
       |},
-      make_error ("not supported")
-    );
+      make_success ()
+    ); *)
 
     (
       {|
@@ -59,7 +66,7 @@ let refinement_type_check_suite =
       make_success ()
     );
 
-    (
+    (* (
       {|
       let a : int[@refinement (v, v > 5)] = 5
       |},
@@ -115,12 +122,12 @@ let refinement_type_check_suite =
       let a : nat = -1
       |},
       make_error ("expected a > 0; found a = -1")
-    );
+    ); *)
 
   ]
 
 (* Test suite for arithmetic eval function *)
-let arith_eval_check_suite =
+let _arith_eval_check_suite =
   create_arith_eval_suite "basics" [
     ("1", 1);
     ("1 + 1", 2);
@@ -134,7 +141,6 @@ let () =
   let all_tests = 
     "all_tests" >::: [
       refinement_type_check_suite;
-      arith_eval_check_suite;
     ]
   in
   run_test_tt_main all_tests

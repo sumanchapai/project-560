@@ -77,6 +77,8 @@ let is_sat (_constraints : Expr.expr list) : bool =
     Printf.printf "The satisfiability of the constraints could not be determined.\n";
     false
 
+let extract_refinement (_var:expression) (_predicate:expression) = 
+  failwith "Not implemented"
 
 let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
 
@@ -84,30 +86,25 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
     | Pstr_value (Nonrecursive, (bindings :value_binding list)) -> 
       (match bindings with
        | binding::[] -> (
-        match binding.pvb_constraint with
-              | None -> true_
-              | _ -> 
-                (* Generate VC *)
-                true_
+          match binding.pvb_pat.ppat_desc with
+          (* Extract refinement type *)
+          | Ppat_constraint (_, {ptyp_desc = Ptyp_poly (_, {ptyp_attributes = [
+            {attr_name = {txt = "refinement"; _}; 
+            attr_payload = PStr [
+              {pstr_desc = Pstr_eval ({pexp_desc = 
+              Pexp_tuple [refinementVariableExpr; refinementPredicateExpr] ; _ }, _); _}
+            ]; 
+            _
+            } 
+          ]; _}); _}) -> 
+            print_endline "FOOBAR";
+            extract_refinement refinementVariableExpr refinementPredicateExpr
+          | _ -> true_
           )
        | _ -> failwith "Not supported"
        )
     
     | _ -> failwith "Not supported"
-    (* 
-      TODO: 
-
-      This method takes a structure_item (i.e.)  a let binding, and reading
-      the contents of the let binding, if required, generates additional 
-      verification condition(s), adds it to the older set of verification 
-      conditions, and returns it.
-
-      I think that for now, we can ignore complex forms of let expressions
-      i.e that are recursive or have multiple bindings, etc. 
-
-      I believe we need to heavily rely on pattern matching to do these things.
-
-    *)
     
 
 let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
