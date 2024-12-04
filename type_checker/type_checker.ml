@@ -75,15 +75,38 @@ let is_sat (_constraints : Expr.expr list) : bool =
     false
 
 
-(* TODO: Generate program verification condition from the program AST *)
-let get_verificaiton_condition _ast = []
+let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
+let handle_structure_item (_str_item: Parsetree.structure_item) (conditions: Expr.expr list) = 
+    (* 
+       TODO: 
+
+       This method takes a structure_item (i.e.)  a let binding, and reading
+       the contents of the let binding, if required, generates additional 
+       verification condition(s), adds it to the older set of verification 
+       conditions, and returns it.
+
+       I think that for now, we can ignore complex forms of let expressions
+       i.e that are recursive or have multiple bindings, etc. 
+
+       I believe we need to heavily rely on pattern matching to do these things.
+
+    *)
+    conditions
+in 
+  (* Go through each structure_item, and keep adding/building the verification condition *)
+  match ast with 
+  | head::tail -> 
+      let updated_conditions = handle_structure_item head conditions in
+      get_verificaiton_condition tail updated_conditions
+  | [] -> []
+
 
 
 let type_check program = 
   let lexbuf = Lexing.from_string program in 
   let ast = Parse.implementation lexbuf in
-  let vc = get_verificaiton_condition ast in
+  let vc = get_verificaiton_condition ast [] in
   match is_sat vc with  
     | true -> Ok ()
-  (* TODO: Add custom error messages *)
+  (* TODO: Future work: add custom error messages *)
     | _ -> Error "failed to type check."
