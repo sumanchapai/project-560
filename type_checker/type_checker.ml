@@ -75,31 +75,61 @@ let is_sat (_constraints : Expr.expr list) : bool =
     false
 
 
-let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
-let handle_structure_item (_str_item: Parsetree.structure_item) (conditions: Expr.expr list) = 
+let handle_structure_item (_str_item: Parsetree.structure_item) = 
+  match _str_item with
+  | Pexp_ident ident ->
+    fprintf fmt "Identifier: %s\n" (Longident.last ident.txt)
+  | Pexp_constant const ->
+      fprintf fmt "Constant: %s\n" (string_of_constant const)
+  | Pexp_let (_rec_flag, bindings, body) ->
+        fprintf fmt "Let Expression:\n";
+        List.iter
+          (fun vb ->
+            fprintf fmt "  Value Binding:\n";
+            fprintf fmt "    Pattern:\n";
+            traverse_and_print_pattern (formatter_with_indent fmt 6) vb.pvb_pat;
+            fprintf fmt "    Expression:\n";
+            traverse_and_print_expr (formatter_with_indent fmt 6) vb.pvb_expr)
+          bindings;
+        fprintf fmt "  Body:\n";
+        traverse_and_print_expr (formatter_with_indent fmt 4) body
+  | Pexp_apply (func, args) ->
+      fprintf fmt "Function Application:\n";
+      fprintf fmt "  Function:\n";
+      traverse_and_print_expr (formatter_with_indent fmt 4) func;
+      List.iter
+        (fun (_label, arg) ->
+          fprintf fmt "  Argument:\n";
+          traverse_and_print_expr (formatter_with_indent fmt 4) arg)
+        args
+  | Pexp_tuple exprs ->
+      fprintf fmt "Tuple:\n";
+      List.iter
+        (fun e ->
+          traverse_and_print_expr (formatter_with_indent fmt 4) e)
+        exprs
+  | _ ->
     (* 
-       TODO: 
+      TODO: 
 
-       This method takes a structure_item (i.e.)  a let binding, and reading
-       the contents of the let binding, if required, generates additional 
-       verification condition(s), adds it to the older set of verification 
-       conditions, and returns it.
+      This method takes a structure_item (i.e.)  a let binding, and reading
+      the contents of the let binding, if required, generates additional 
+      verification condition(s), adds it to the older set of verification 
+      conditions, and returns it.
 
-       I think that for now, we can ignore complex forms of let expressions
-       i.e that are recursive or have multiple bindings, etc. 
+      I think that for now, we can ignore complex forms of let expressions
+      i.e that are recursive or have multiple bindings, etc. 
 
-       I believe we need to heavily rely on pattern matching to do these things.
+      I believe we need to heavily rely on pattern matching to do these things.
 
     *)
-    conditions
-in 
+
+let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
   (* Go through each structure_item, and keep adding/building the verification condition *)
   match ast with 
-  | head::tail -> 
-      let updated_conditions = handle_structure_item head conditions in
-      get_verificaiton_condition tail updated_conditions
   | [] -> []
-
+  | head::tail -> let new_cond = handle_structure_item head in
+      get_verificaiton_condition tail conditions::new_cond
 
 
 let type_check program = 
