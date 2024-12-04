@@ -78,19 +78,7 @@ let is_sat (_constraints : Expr.expr list) : bool =
 
 let handle_structure_item (_str_item: Parsetree.structure_item) = 
   match _str_item.pstr_desc with
-    | Pexp_ident ident ->
-      fprintf fmt "Identifier: %s\n" (Longident.last ident.txt)
-    | Pexp_constant const ->
-        fprintf fmt "Constant: %s\n" (string_of_constant const)
-    | Pexp_let (_rec_flag, bindings, body) ->
-          fprintf fmt "Let Expression:\n";
-
-    | Pexp_apply (func, args) ->
-        fprintf fmt "Function Application:\n";
-        fprintf fmt "  Function:\n";
-    | Pexp_tuple exprs ->
-        fprintf fmt "Tuple:\n";
-    | _ ->
+    | _ -> _
     (* 
       TODO: 
 
@@ -111,7 +99,7 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
   match ast with 
   | [] -> []
   | head::tail -> let new_cond = handle_structure_item head in
-      get_verificaiton_condition tail conditions::new_cond
+      get_verificaiton_condition tail (new_cond::conditions)
 
 
 let type_check program = 
