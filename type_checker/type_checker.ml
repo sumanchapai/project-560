@@ -44,11 +44,46 @@ let _simple_z3_example _ =
   | Solver.UNKNOWN ->
       Printf.printf "The satisfiability of the constraints could not be determined.\n"
 
+(* Take a list of verification conditions in z3 and 
+   report boolean representing whether the constrint is satisfiable.
+   if satisfiable returns true, 
+   if unsat returns false, 
+   if unknown returns false and write error to logs.
+   *)
+let is_sat (_constraints : Expr.expr list) : bool = 
+  (* Create a Z3 configuration and context *)
+  let cfg = [("model", "true")] in
+  let ctx = Z3.mk_context cfg in
+  (* Create a solver and add the constraints *)
+  let solver = Solver.mk_solver ctx None in
+  (* Combine the constraints *)
+  let combined_constraints = Boolean.mk_and ctx _constraints in
+  Solver.add solver [combined_constraints];
+  (* Check satisfiability *)
+  match Solver.check solver [] with
+  | Solver.SATISFIABLE ->
+      Printf.printf "The constraints are satisfiable.\n";
+      (* Print the model *)
+      let model = Solver.get_model solver |> Option.get in
+    Printf.printf "Model: %s\n" (Model.to_string model);
+    true
+  | Solver.UNSATISFIABLE ->
+    Printf.printf "The constraints are unsatisfiable.\n";
+    false
+  | Solver.UNKNOWN ->
+    Printf.printf "The satisfiability of the constraints could not be determined.\n";
+    false
 
-let type_check _program = 
-  let custom_failure : (unit, string) result = 
-    Ok ()
-    (* Error "Type checker isn't implemented: line:1 column:1" *)
-  in custom_failure
+
+(* TODO: Generate program verification condition from the program AST *)
+let get_verificaiton_condition _ast = []
 
 
+let type_check program = 
+  let lexbuf = Lexing.from_string program in 
+  let ast = Parse.implementation lexbuf in
+  let vc = get_verificaiton_condition ast in
+  match is_sat vc with  
+    | true -> Ok ()
+  (* TODO: Add custom error messages *)
+    | _ -> Error "failed to type check."
