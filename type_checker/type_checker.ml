@@ -5,6 +5,10 @@ open Parsetree
    type checks. If the program doesn't type check, then it returns the errors
    in the program.
    *)
+let cfg = [("model", "true")];;
+let ctx = Z3.mk_context cfg;;
+
+let true_ = Boolean.mk_val ctx true
 
 let _simple_z3_example _ =
   (* Create a Z3 configuration and context *)
@@ -53,8 +57,6 @@ let _simple_z3_example _ =
    *)
 let is_sat (_constraints : Expr.expr list) : bool = 
   (* Create a Z3 configuration and context *)
-  let cfg = [("model", "true")] in
-  let ctx = Z3.mk_context cfg in
   (* Create a solver and add the constraints *)
   let solver = Solver.mk_solver ctx None in
   (* Combine the constraints *)
@@ -76,9 +78,22 @@ let is_sat (_constraints : Expr.expr list) : bool =
     false
 
 
-let handle_structure_item (_str_item: Parsetree.structure_item) = 
-  match _str_item.pstr_desc with
-    | _ -> _
+let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
+
+  match str_item.pstr_desc with
+    | Pstr_value (Nonrecursive, (bindings :value_binding list)) -> 
+      (match bindings with
+       | binding::[] -> (
+        match binding.pvb_constraint with
+              | None -> true_
+              | _ -> 
+                (* Generate VC *)
+                true_
+          )
+       | _ -> failwith "Not supported"
+       )
+    
+    | _ -> failwith "Not supported"
     (* 
       TODO: 
 
@@ -93,6 +108,7 @@ let handle_structure_item (_str_item: Parsetree.structure_item) =
       I believe we need to heavily rely on pattern matching to do these things.
 
     *)
+    
 
 let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
   (* Go through each structure_item, and keep adding/building the verification condition *)

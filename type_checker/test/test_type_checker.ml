@@ -49,6 +49,13 @@ let refinement_type_check_suite =
       {|
       let a : int[@refinement (v, v > 0)] = 5
       |},
+      make_error ("not supported")
+    );
+
+    (
+      {|
+      let a : int[@refinement (v, v > 0)] = 5
+      |},
       make_success ()
     );
 
