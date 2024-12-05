@@ -1,10 +1,6 @@
 open Z3
 open Parsetree
-(* This library is supposed to take an OCaml programs with refinement types 
-   added to it in the form of attributes, and report whether or not the program
-   type checks. If the program doesn't type check, then it returns the errors
-   in the program.
-   *)
+
 let cfg = [("model", "true")];;
 let ctx = Z3.mk_context cfg;;
 
@@ -77,17 +73,56 @@ let is_sat (_constraints : Expr.expr list) : bool =
     Printf.printf "The satisfiability of the constraints could not be determined.\n";
     false
 
-let extract_refinement (_var:expression) (_predicate:expression) = 
+let _extract_refinement (_var:expression) (_predicate:expression) = 
   failwith "Not implemented"
-
+(*
 let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
 
   match str_item.pstr_desc with
     | Pstr_value (Nonrecursive, (bindings :value_binding list)) -> 
-      (match bindings with
-       | binding::[] -> (
+      (
+        match bindings with
+        | binding::[] -> 
+          (
           match binding.pvb_pat.ppat_desc with
-          (* Extract refinement type *)
+          | Ppat_constraint (_, x) -> (
+            match x with 
+            | {ptyp_desc; _} -> (
+              match ptyp_desc with
+              | Ptyp_poly(_,x) -> (
+                match x with
+                |{ptyp_attributes;_} -> (
+                  match ptyp_attributes with 
+                  | [{attr_name;attr_payload;_}] -> (
+                    match attr_name with 
+                    | {txt = "refinement";_} -> (
+                      match attr_payload with
+                      | PStr [{pstr_desc;_}] -> (
+                        match pstr_desc with 
+                        | Pstr_eval ({pexp_desc;_},_) -> (
+                          match pexp_desc with 
+                          | Pexp_tuple [refinementVariableExpr; refinementPredicateExpr] -> extract_refinement refinementVariableExpr refinementPredicateExpr
+                          |_ -> true_
+                        )
+                        |_ -> true_
+                      )
+                      |_ -> true_
+                    )
+                    | _ -> true_
+                  )
+                  |_ -> true_
+                )
+                (* |_ -> true_ *)
+              )
+              | _ -> true_
+            )
+            (* | _ -> true_ *)
+          )
+          | x -> 
+            print_endline("SUMAN");
+           true_
+        )
+          (* Extract refinement type
           | Ppat_constraint (_, {ptyp_desc = Ptyp_poly (_, {ptyp_attributes = [
             {attr_name = {txt = "refinement"; _}; 
             attr_payload = PStr [
@@ -100,12 +135,31 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
             print_endline "FOOBAR";
             extract_refinement refinementVariableExpr refinementPredicateExpr
           | _ -> true_
-          )
+          ) *)
+
        | _ -> failwith "Not supported"
        )
     
     | _ -> failwith "Not supported"
-    
+ *)   
+
+
+let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
+  match str_item.pstr_desc with 
+  | Pstr_value (Nonrecursive, [binding]) -> (
+    match binding.pvb_constraint with
+    | Some(x) -> (
+      match x with
+      | Pvc_constraint {typ = _ctype; _} -> 
+        print_endline "suman";
+        true_
+      | _ -> failwith "Not supported" (* Some other type than simple type *)
+    )
+    | _ -> true_ (*No type information provided*)
+  )
+  |_ ->  failwith "Not supported"
+     
+
 
 let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
   (* Go through each structure_item, and keep adding/building the verification condition *)
@@ -115,6 +169,27 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
       get_verificaiton_condition tail (new_cond::conditions)
 
 
+
+(* type refinement = {
+  variable: string;
+  predicate: expression;
+} *)
+
+
+(* let convert_assignment_refinement_to_expr (refn: refinement) =
+  let pred = refn.predicate in
+  let var = refn.variable in
+  let v = Expr.mk_const ctx (Symbol.mk_string ctx var) (Arithmetic.Integer.mk_sort ctx) in ()
+  (* let pred_expr =
+    match pred with *)
+let convert_expression_to_expr (expr: expression) = 
+  match expr.pexp_desc with 
+  | Pexp_apply (lhs: expression, l : List (arg_label * expression)) ->
+    convert
+  
+  | _ -> failwith "Not supported"
+let convert_application_to_expr (desc: pexp_desc) =  *)
+  
 let type_check program = 
   let lexbuf = Lexing.from_string program in 
   let ast = Parse.implementation lexbuf in
@@ -123,3 +198,4 @@ let type_check program =
     | true -> Ok ()
   (* TODO: Future work: add custom error messages *)
     | _ -> Error "failed to type check."
+
