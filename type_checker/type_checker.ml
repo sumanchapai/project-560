@@ -28,7 +28,7 @@ let rec convert_expression_to_expr (expr: expression) =
   match expr.pexp_desc with
   | Pexp_apply (func, args) ->
     let expr = convert_application_to_expr func args in
-    Printf.printf "Expression: %s\n" (Expr.to_string expr);
+    (* Printf.printf "Expression: %s\n" (Expr.to_string expr); *)
     expr
   | Pexp_constant (c) -> 
     let int_val = int_from_constant c in
@@ -115,7 +115,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_eq ctx lhs_z3 rhs_z3
               ) 
-          |_ -> failwith "Incorrectly Typed ||"        
+          |_ -> failwith "Incorrectly Typed ="        
         )           
         | Lident ">" -> (
           match args with
@@ -286,6 +286,13 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list 
         print_string "auxilary_var "; 
         print_endline auxilary_var; 
         *)
+      | Pvc_constraint {typ = {
+        ptyp_desc = Ptyp_constr ({txt = Lident base_type; _}, _);
+        ptyp_attributes = []; _}; _} -> 
+          let lhs_z3_var = create_z3_variable lhs_var base_type in
+          let rhs_constraints =  Boolean.mk_eq ctx lhs_z3_var (convert_expression_to_expr rhs_exp) in
+          print_endline("DID match");
+          [rhs_constraints]
 
       | _ -> failwith "Not supported" (* Some other type than simple type *)
     )

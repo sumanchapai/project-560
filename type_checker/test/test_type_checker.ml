@@ -61,7 +61,8 @@ let refinement_type_check_suite =
 
     (
       {|
-      let b : int[@refinement (v, v>0)] = 5
+      let a : int = 5
+      let b : int[@refinement (v, v>0)] = a
       |},
       make_success ()
     );
