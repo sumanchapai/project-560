@@ -27,7 +27,9 @@ let int_from_constant (candidate: constant) : int =
 let rec convert_expression_to_expr (expr: expression) = 
   match expr.pexp_desc with
   | Pexp_apply (func, args) ->
-    convert_application_to_expr func args
+    let expr = convert_application_to_expr func args in
+    Printf.printf "Expression: %s\n" (Expr.to_string expr);
+    expr
   | Pexp_constant (c) -> 
     let int_val = int_from_constant c in
     Arithmetic.Integer.mk_numeral_i ctx int_val
@@ -54,6 +56,26 @@ and convert_application_to_expr (func: expression) (args) =
               ) 
           |_ -> failwith "Not supported +"        
         )
+        | Lident "-" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing -");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Arithmetic.mk_sub ctx [lhs_z3; rhs_z3] 
+              ) 
+          |_ -> failwith "Not supported -"        
+        )
+        | Lident "*" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing *");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Arithmetic.mk_mul ctx [lhs_z3; rhs_z3] 
+              ) 
+          |_ -> failwith "Not supported *"        
+        )
         
         | Lident ">" -> (
           match args with
@@ -63,10 +85,49 @@ and convert_application_to_expr (func: expression) (args) =
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 let temp =Arithmetic.mk_gt ctx lhs_z3 rhs_z3 in 
-                Printf.printf "Expression: %s\n" (Expr.to_string temp);
+                (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
                 temp
             )
           |_ -> failwith "Not supported >"        
+        )
+        | Lident "<" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing <");
+          
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                let temp = Arithmetic.mk_lt ctx lhs_z3 rhs_z3 in 
+                (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
+                temp
+            )
+          |_ -> failwith "Not supported <"        
+        )
+        | Lident "<=" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing <=");
+          
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                let temp = Boolean.mk_or ctx [Arithmetic.mk_lt ctx lhs_z3 rhs_z3; Boolean.mk_eq ctx lhs_z3 rhs_z3] in 
+                (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
+                temp
+            )
+          |_ -> failwith "Not supported <="   
+        )
+          | Lident ">=" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing <=");
+          
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                let temp = Boolean.mk_or ctx [Arithmetic.mk_gt ctx lhs_z3 rhs_z3; Boolean.mk_eq ctx lhs_z3 rhs_z3] in 
+                (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
+                temp
+            )
+          |_ -> failwith "Not supported <="        
         )
         | _ -> failwith "Not supported operation"
       )
@@ -91,12 +152,17 @@ let is_sat (_constraints : Expr.expr list) : bool =
   (* Create a Z3 configuration and context *)
   (* Create a solver and add the constraints *)
 
+  let expr_strings = List.map Expr.to_string _constraints in
+  List.iter (Printf.printf "Expression: %s\n") expr_strings;
+
   let solver = Solver.mk_solver ctx None in
   (* Combine the constraints *)
   let combined_constraints = Boolean.mk_and ctx _constraints in
   Solver.add solver [combined_constraints];
-  print_endline("calling the solver with following constraints");
-  print_endline(Solver.to_string solver);
+
+
+  (* print_endline("calling the solver with following constraints");
+  print_endline(Solver.to_string solver); *)
   (* Check satisfiability *)
   match Solver.check solver [] with
   | Solver.SATISFIABLE ->
@@ -117,17 +183,25 @@ let get_var_from_pattern (binding : pattern) : string =
   | {ppat_desc = Ppat_var {txt; _};_} -> txt
   | _ -> failwith "unexpected pattern"
 
-
-(* let get_var_from_exp (expr : expression) : string = 
+(* 
+let get_var_from_exp (expr : expression) : string = 
   match expr with 
   | {pexp_desc = Pexp_ident { txt = Lident x; _ };_}  -> x
   |_ -> failwith "unexpected pattern" *)
 
-let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
+
+let create_z3_variable (name: string) (kind: string) = 
+    match kind with
+    | "int" -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Arithmetic.Integer.mk_sort ctx)
+    | "bool" -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Boolean.mk_sort ctx)
+    | _ -> failwith ("variable of type" ^ kind ^ " is not implemented")
+
+
+let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list = 
   match str_item.pstr_desc with 
   | Pstr_value (Nonrecursive, [binding]) -> (
-    let _lhs_var = get_var_from_pattern binding.pvb_pat in (* LHS variable *)
-    let _rhs_exp = binding.pvb_expr in
+    let lhs_var = get_var_from_pattern binding.pvb_pat in (* LHS variable *)
+    let rhs_exp = binding.pvb_expr in
     (* The following is trying to extract the refinement type  *)
     let cstrn =  binding.pvb_constraint in
     match cstrn with
@@ -163,17 +237,26 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
           Based on these things we need to generate a Z3 constraint.
           Base type might be needed as it will help you know what kind of z3 variable to create
         *)
-        let _temp = convert_expression_to_expr refPredicate in 
+        
+        let lhs_z3_var = create_z3_variable lhs_var base_type in
+        let refinement_aux_var = create_z3_variable auxilary_var base_type in
+        let rhs_constraints =  Boolean.mk_eq ctx lhs_z3_var (convert_expression_to_expr rhs_exp) in
+        let ref_var_eq_lhs_var_constraint = Boolean.mk_eq ctx lhs_z3_var refinement_aux_var in
+        let refinement_predicate_contraint = convert_expression_to_expr refPredicate in 
+        [refinement_predicate_contraint; rhs_constraints; ref_var_eq_lhs_var_constraint]
+
+        (* 
+        (* Debuggin info: *)
         print_string "base_type "; 
         print_endline base_type;
         print_string "var ";
-        print_endline _lhs_var;
         print_string "auxilary_var "; 
-        print_endline auxilary_var;
-        _temp
+        print_endline auxilary_var; 
+        *)
+
       | _ -> failwith "Not supported" (* Some other type than simple type *)
     )
-    | _ -> true_ (*No type information provided*)
+    | _ -> [true_] (*No type information provided*)
   )
   |_ ->  failwith "Not supported"
 
@@ -182,9 +265,9 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
   (* Go through each structure_item, and keep adding/building the verification condition *)
   match ast with 
   | [] -> conditions
-  | head::tail -> let new_cond = handle_structure_item head in
-      print_endline("added new cond");
-      get_verificaiton_condition tail (new_cond::conditions)
+  | head::tail -> let new_conds = handle_structure_item head in
+      print_endline("added new conds");
+      get_verificaiton_condition tail (new_conds@conditions)
 
 
 let type_check program = 
