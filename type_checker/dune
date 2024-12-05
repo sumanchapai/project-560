@@ -3,3 +3,8 @@
  (modules type_checker)
  (libraries ppxlib z3))
 
+(executable
+ (name main)
+ (modules main)
+ (libraries checker))
+
