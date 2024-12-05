@@ -6,22 +6,6 @@ let make_success _ = Ok ()
 let make_error err_string = Error err_string
 let _make_basic_error _ = make_error "Failed to Type Check"
 
-let create_arith_eval_suite name cases : test =
-  (* Helper function to create a test case *)
-  let create_test_case index (program, expected_result) =
-    (* The test function to execute *)
-    let test_fun _ =
-      let actual_result = Checker.Helpers.arith_eval program in
-      assert_equal actual_result expected_result
-    in
-    (* Test case name is derived from index *)
-    Printf.sprintf "Test case %d" index >:: test_fun
-  in
-  (* Create a list of tests by mapping over the cases *)
-  let tests = List.mapi create_test_case cases in
-  (* Return a test suite with the given name and test cases *)
-  name >::: tests
-
 
 (* `create_suites` generates a suite of tests for the provided test cases. *)
 let create_refinement_suites name cases : test =
@@ -183,7 +167,7 @@ let refinement_type_check_suite =
       _make_basic_error ()
     ); *)
 
-    (* (
+    (
       {|
       let a : int[@refinement (v, v > 0)] = 5
       let b : int[@refinement (v, v < 0)] = -5
@@ -197,7 +181,7 @@ let refinement_type_check_suite =
       let b : int[@refinement (v, v < 0)] = -5
       |},
       make_success ()
-    ); *)
+    );
 
 
     (* (
@@ -216,16 +200,6 @@ let refinement_type_check_suite =
       _make_basic_error ()
     ); *)
 
-  ]
-
-(* Test suite for arithmetic eval function *)
-let _arith_eval_check_suite =
-  create_arith_eval_suite "basics" [
-    ("1", 1);
-    ("1 + 1", 2);
-    ("1 + 5", 6);
-    ("(1 + 5) * 10", 60);
-    ("-3 + 5 * 2", 7);
   ]
 
 

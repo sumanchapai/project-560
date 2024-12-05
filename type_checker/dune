@@ -1,5 +1,5 @@
 (library
  (name checker)
- (modules helpers type_checker)
+ (modules type_checker)
  (libraries ppxlib z3))
 
