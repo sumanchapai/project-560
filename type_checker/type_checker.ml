@@ -144,13 +144,38 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
  *)   
 
 
+let get_var_from_pattern (binding : pattern) : string = 
+  match binding with 
+  | {ppat_desc = Ppat_var {txt; _};_} -> txt
+  | _ -> failwith "unexpected pattern"
+  
+
+
 let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
   match str_item.pstr_desc with 
   | Pstr_value (Nonrecursive, [binding]) -> (
-    match binding.pvb_constraint with
+    (* extract var *)
+    let lhs_var = get_var_from_pattern binding.pvb_pat in
+    (* extract rhs *)
+    (* let rhs_exp = get_rhs_from_struct_item binding.pvb_expr in *)
+    (* Constraint matchin *)
+    let cstrn =  binding.pvb_constraint in
+    match cstrn with
     | Some(x) -> (
       match x with
-      | Pvc_constraint {typ = _ctype; _} -> 
+      | Pvc_constraint {typ = {ptyp_attributes = [{
+        attr_name = {
+          txt = "refinement";
+          _
+        };
+        attr_payload = PStr [{
+          pstr_desc = Pstr_eval ({
+            pexp_desc = Pexp_tuple [_refVar; _refPredicate];
+            _
+          }, _)
+        ; _}];
+         _
+      }]; _}; _} -> 
         print_endline "suman";
         true_
       | _ -> failwith "Not supported" (* Some other type than simple type *)
@@ -170,13 +195,18 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
 
 
 
-(* type refinement = {
+type refinement = {
   variable: string;
   predicate: expression;
-} *)
+}
+
+let int_from_constant (candidate: constant) : int = 
+  match candidate with
+  | Pconst_integer (x, _)  -> int_of_string(x)
+  | _ -> failwith "provided constant is not an integer"
 
 
-(* let convert_assignment_refinement_to_expr (refn: refinement) =
+let convert_assignment_refinement_to_expr (refn: refinement) =
   let pred = refn.predicate in
   let var = refn.variable in
   let v = Expr.mk_const ctx (Symbol.mk_string ctx var) (Arithmetic.Integer.mk_sort ctx) in ()
@@ -184,12 +214,27 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
     match pred with *)
 let convert_expression_to_expr (expr: expression) = 
   match expr.pexp_desc with 
-  | Pexp_apply (lhs: expression, l : List (arg_label * expression)) ->
-    convert
+  | Pexp_apply (func, args) ->
+    convert_application_to_expr expr.pexp_desc
   
   | _ -> failwith "Not supported"
-let convert_application_to_expr (desc: pexp_desc) =  *)
+let rec convert_application_to_expr (desc: expression_desc) = 
+  let (func, args) = desc in
+  let ident = func.pexp_desc in
+  match ident with
   
+    | Pexp_ident op ->
+      match op.txt with
+      | Lident "+" -> 
+        match args with
+        
+        | [lhs; rhs] -> Arithmetic.mk_add ctx [convert_expression_to_expr lhs; convert_expression_to_expr rhs]
+        | _ -> failwith "Not supported more argumments than defined for application"
+ 
+    
+  
+  | _ -> failwith "Not supported application type"
+
 let type_check program = 
   let lexbuf = Lexing.from_string program in 
   let ast = Parse.implementation lexbuf in
