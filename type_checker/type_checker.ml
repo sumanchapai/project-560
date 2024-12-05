@@ -6,6 +6,14 @@ let ctx = Z3.mk_context cfg;;
 
 let true_ = Boolean.mk_val ctx true
 
+type type_constraint = {
+  ttype: string;
+  constraints: Expr.expr;
+}
+
+let type_constraints : type_constraint list ref = ref [];;
+
+
 (* type vartype = 
   | Int of int
   | Bool of bool
@@ -229,6 +237,8 @@ let create_z3_variable (name: string) (kind: string) =
     | "bool" -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Boolean.mk_sort ctx)
     | _ -> failwith ("variable of type" ^ kind ^ " is not implemented")
 
+(* let convert_type_constraints (expr: type_declaration) = () *)
+
 
 let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list = 
   match str_item.pstr_desc with 
@@ -294,11 +304,19 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list 
           (* print_endline("DID match"); *)
           [rhs_constraints]
 
+
       | _ -> failwith "Not supported" (* Some other type than simple type *)
     )
     | _ -> [true_] (*No type information provided*)
   )
+  (* | Pstr_type (Recursive, type_decl_list) -> 
+    let c_constraint = ref [] in
+      List.iter (fun x -> c_constraint := x :: !c_constraint) 
+      (List.map convert_type_constraints type_decl_list);
+    [true_]; *)
+
   |_ ->  failwith "Not supported"
+
 
 
 let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.expr list) = 
