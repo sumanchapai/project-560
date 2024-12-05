@@ -11,3 +11,5 @@ Run tests
 ```/bin/bash
 opam exec -- dune runtest
 ```
+
+Run `make demo` for demo

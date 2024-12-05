@@ -25,7 +25,7 @@ let () =
   Printf.printf "Processing file: %s\n" filename;
   match Checker.Type_checker.type_check file_contents with
     |Ok _ -> 
-      Printf.printf "Refinement Type Check Successful"
+      Printf.printf "Refinement Type Check Successful\n"
   | Error err -> 
       Printf.printf "Checker checking failed: %s\n" err;
       exit 1
