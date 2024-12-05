@@ -7,15 +7,15 @@ let ctx = Z3.mk_context cfg;;
 let true_ = Boolean.mk_val ctx true
 
 (* type vartype = 
-  | Int
-  | Bool *)
+  | Int of int
+  | Bool of bool
 
  type refinement = {
   (* variable_type: vartype; *)
-  variable_type: int;
+  variable_type: vartype;
   variable: string;
   predicate: expression;
-}
+} *)
 
 let int_from_constant (candidate: constant) : int = 
   match candidate with
@@ -38,9 +38,10 @@ let rec convert_expression_to_expr (expr: expression) =
     | Lident x -> 
       let var = Expr.mk_const ctx (Symbol.mk_string ctx x) (Arithmetic.Integer.mk_sort ctx) in
       var
-    | _ -> failwith "Not supported"
+    | _ -> failwith "Not supported Type"
     )
-  | _ -> failwith "Not supported"
+  | Pexp_construct ({txt = Lident str;_},_) ->  (Boolean.mk_val ctx (bool_of_string(str)))
+  | _ -> failwith "Not supported Type"
 and convert_application_to_expr (func: expression) (args) = 
   let ident = func.pexp_desc in
     match ident with  
@@ -75,18 +76,54 @@ and convert_application_to_expr (func: expression) (args) =
                 Arithmetic.mk_mul ctx [lhs_z3; rhs_z3] 
               ) 
           |_ -> failwith "Not supported *"        
+        )     
+        | Lident "/" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing /");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Arithmetic.mk_div ctx lhs_z3 rhs_z3
+              ) 
+          |_ -> failwith "Not supported /"        
+        )   
+        | Lident "&&" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing &&");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Boolean.mk_and ctx [lhs_z3; rhs_z3]
+              ) 
+          |_ -> failwith "Not supported &&"        
+        )  
+        | Lident "||" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing ||");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Boolean.mk_or ctx [lhs_z3; rhs_z3]
+              ) 
+          |_ -> failwith "Not supported"        
         )
-        
+        | Lident "=" -> (
+          match args with
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing =");
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Boolean.mk_eq ctx lhs_z3 rhs_z3
+              ) 
+          |_ -> failwith "Not supported"        
+        )           
         | Lident ">" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing >");
-          
+            print_endline("parsing >");          
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
-                let temp =Arithmetic.mk_gt ctx lhs_z3 rhs_z3 in 
-                (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
-                temp
+                Arithmetic.mk_gt ctx lhs_z3 rhs_z3
             )
           |_ -> failwith "Not supported >"        
         )
@@ -116,7 +153,7 @@ and convert_application_to_expr (func: expression) (args) =
             )
           |_ -> failwith "Not supported <="   
         )
-          | Lident ">=" -> (
+        | Lident ">=" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
             print_endline("parsing <=");
@@ -134,12 +171,12 @@ and convert_application_to_expr (func: expression) (args) =
       |_ -> failwith "Not Supported func desc"
 
 
-let _convert_assignment_refinement_to_expr (refn: refinement) =
+(* let _convert_assignment_refinement_to_expr (refn: refinement) =
   let pred = refn.predicate in
   let var = refn.variable in
   let _var_t = refn.variable_type in
   let _v = Expr.mk_const ctx (Symbol.mk_string ctx var) (Arithmetic.Integer.mk_sort ctx) in 
-  let _pred_expr = (convert_expression_to_expr pred) in ()
+  let _pred_expr = (convert_expression_to_expr pred) in () *)
 
   
 (* Take a list of verification conditions in z3 and 
@@ -274,8 +311,6 @@ let type_check program =
   let lexbuf = Lexing.from_string program in 
   let ast = Parse.implementation lexbuf in
   let vc = get_verificaiton_condition ast [] in
-  Printf.printf "The number of constraints is: %d\n" (List.length vc);
-
   match is_sat vc with  
     | true -> Ok ()
   (* TODO: Future work: add custom error messages *)
