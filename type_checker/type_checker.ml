@@ -47,15 +47,17 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "+" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
+            print_endline("parsing +");
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
-                Arithmetic.mk_add ctx [lhs_z3; rhs_z3])
+                Arithmetic.mk_add ctx [lhs_z3; rhs_z3] 
+              ) 
           |_ -> failwith "Not supported +"        
         )
         | Lident ">" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> 
-            print_endline("parsing correctly");
+            print_endline("parsing >");
             (
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
@@ -63,8 +65,8 @@ and convert_application_to_expr (func: expression) (args) =
           |_ -> failwith "Not supported >"        
         )
         | _ -> failwith "Not supported operation"
-    )
-    |_ -> failwith "Not Supported func desc"
+      )
+      |_ -> failwith "Not Supported func desc"
 
 
 let _convert_assignment_refinement_to_expr (refn: refinement) =
