@@ -4,6 +4,7 @@ open OUnit2
 (* Make success/failure result types *)
 let make_success _ = Ok ()
 let make_error err_string = Error err_string
+let _make_basic_error _ = make_error "Failed to Type Check"
 
 let create_arith_eval_suite name cases : test =
   (* Helper function to create a test case *)
@@ -67,31 +68,23 @@ let refinement_type_check_suite =
 
     (
       {|
-      let a : int[@refinement (v, v>=0)] = 5
+      let a : int[@refinement (v, v>0)] = 1
       |},
       make_success ()
     );
 
     (
       {|
-      let a : int[@refinement (v, v<=0)] = 5
-      |},
-      make_error "Failed to Type Check"
-    );
-
-    (
-      {|
-      let a : int = 5
-      let b : int[@refinement (v, v>0)] = a
+      let a : int[@refinement (v, v>=0)] = 0
       |},
       make_success ()
     );
 
-    (* (
+    (
       {|
-      let a : int[@refinement (v, v > 5)] = 5
+      let a : int[@refinement (v, v>=0)] = 1 + 10
       |},
-      make_error "expected v > 5; found v = 5"
+      make_success ()
     );
 
     (
@@ -119,17 +112,54 @@ let refinement_type_check_suite =
       {|
       let a : int[@refinement (v, v > 0)] = 1 * (3 - 5)
       |},
-      make_error "expected v > 5; found v = -2"
+      _make_basic_error ()
+    );
+
+
+    (
+      {|
+      let a : int[@refinement (v, v>=0)] = -10
+      |},
+      _make_basic_error ()
     );
 
     (
       {|
-      let sum_1 a b : int[@refinement (v, v >= a && v >= b)] = a + b
+      let a : int[@refinement (v, v<=0)] = 5
+      |},
+      _make_basic_error ()
+    );
+
+    (
+      {|
+      let a : int = 5
+      let b : int[@refinement (v, v>0)] = a
       |},
       make_success ()
     );
 
     (
+      {|
+      let a : int = 5
+      let b : int[@refinement (v, v>0)] = a
+      let tru : bool = true
+      let c : int[@refinement (v, false)] = 1
+      |},
+      _make_basic_error ()
+    );
+
+    (
+      {|
+      let a : int = 5
+      let b : int[@refinement (v, v>0)] = a
+      let tru_var : bool[@refinement (v, true)] = true
+      let c : int[@refinement (v, v>=1 && tru_var)] = 1
+      |},
+      _make_basic_error ()
+    );
+
+
+    (* (
       {|
       type nat = int[@refinement (v, v > 0)]
       let a : nat = 1
@@ -142,7 +172,7 @@ let refinement_type_check_suite =
       type nat = int[@refinement (v, v > 0)]
       let a : nat = -1
       |},
-      make_error ("expected a > 0; found a = -1")
+      _make_basic_error ()
     ); *)
 
   ]
