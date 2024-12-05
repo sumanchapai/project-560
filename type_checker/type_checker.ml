@@ -38,8 +38,12 @@ let get_var_from_pattern (binding : pattern) : string =
   match binding with 
   | {ppat_desc = Ppat_var {txt; _};_} -> txt
   | _ -> failwith "unexpected pattern"
-  
 
+
+(* let get_var_from_exp (expr : expression) : string = 
+  match expr with 
+  | {pexp_desc = Pexp_ident { txt = Lident x; _ };_}  -> x
+  |_ -> failwith "unexpected pattern" *)
 
 let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr = 
   match str_item.pstr_desc with 
@@ -51,14 +55,22 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
     match cstrn with
     | Some(x) -> (
       match x with
-      | Pvc_constraint {typ = {ptyp_attributes = [{
+      | Pvc_constraint {typ = {
+        ptyp_desc = Ptyp_constr ({txt = Lident base_type; _}, _);
+        ptyp_attributes = [{
         attr_name = {
           txt = "refinement";
           _
         };
         attr_payload = PStr [{
           pstr_desc = Pstr_eval ({
-            pexp_desc = Pexp_tuple [_refVar; _refPredicate];
+            pexp_desc = Pexp_tuple [
+              
+              {pexp_desc = Pexp_ident { txt = Lident auxilary_var; _ };_}; 
+              
+              _refPredicate
+              
+              ];
             _
           }, _)
         ; _}];
@@ -73,6 +85,12 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
           Based on these things we need to generate a Z3 constraint.
           Base type might be needed as it will help you know what kind of z3 variable to create
         *)
+        print_string "base_type "; 
+        print_endline base_type;
+        print_string "var ";
+        print_endline _lhs_var;
+        print_string "auxilary_var "; 
+        print_endline auxilary_var;
         print_endline "suman";
         true_
       | _ -> failwith "Not supported" (* Some other type than simple type *)
@@ -92,7 +110,7 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
 
 
 
-type refinement = {
+(* type refinement = {
   variable: string;
   predicate: expression;
 }
@@ -114,29 +132,27 @@ let rec convert_expression_to_expr (expr: expression) =
   | Pexp_apply (func, args) ->
     convert_application_to_expr func args
   | _ -> failwith "Not supported"
-and
-convert_application_to_expr (func: expression) (args) = 
-      let ident = func.pexp_desc in
-      match ident with  
-        | Pexp_ident op -> (
-          match op.txt with
-          | Lident "+" -> 
-            match args with
-            | [lhs; rhs] -> Arithmetic.mk_add ctx [convert_expression_to_expr lhs; convert_expression_to_expr rhs]
-            | _ -> failwith "Not supported more argumments than defined for application"
-          | Lident "-" ->
-            match args with
-            | [lhs; rhs] -> Arithmetic.mk_sub ctx [convert_expression_to_expr lhs; convert_expression_to_expr rhs]
-            | _ -> failwith "Not supported more argumments than defined for application"
-          | Lident "*" ->
-            match args with
-            | [lhs; rhs] -> Arithmetic.mk_mul ctx [convert_expression_to_expr lhs; convert_expression_to_expr rhs]
-            | _ -> failwith "Not supported more argumments than defined for application"
-          
-        )
-    | _ -> failwith "Not supported application type"
+and convert_application_to_expr (func: expression) (args) = 
+  let ident = func.pexp_desc in
+    match ident with  
+      | Pexp_ident op -> (
+        match op.txt with
+        | Lident "+" -> 
+          match args with
+          lhs::rhs::[] -> 
+            match lhs with
+            | (llabel, lhs_expr) -> 
+              match rhs with
+              | (rlabel, rhs_expr) -> 
+                let lhs_z3 = convert_expression_to_expr lhs_expr in
+                let rhs_z3 = convert_expression_to_expr rhs_expr in
+                Arithmetic.mk_add ctx [lhs_z3; rhs_z3]
+          | _ -> failwith "Not supported more argumments than defined for application"
+        
+      )
+      | _ -> failwith "Not supported application type"
   
-  | _ -> failwith "Not supported application type"
+  | _ -> failwith "Not supported application type"  *)
 
 let type_check program = 
   let lexbuf = Lexing.from_string program in 
