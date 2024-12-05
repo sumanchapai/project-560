@@ -1,0 +1,5 @@
+type types = 
+| Tbool 
+| Tint
+
+

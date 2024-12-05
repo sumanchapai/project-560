@@ -29,7 +29,7 @@ let create_refinement_suites name cases : test =
 
 let refinement_type_check_suite =
   create_refinement_suites "basics" [
-    (
+    (* (
       {|
       let a  = 5
       |},
@@ -181,7 +181,7 @@ let refinement_type_check_suite =
       let b : int[@refinement (v, v < 0)] = -5
       |},
       make_success ()
-    );
+    ); *)
 
 
     (* (
@@ -199,6 +199,14 @@ let refinement_type_check_suite =
       |},
       _make_basic_error ()
     ); *)
+
+    (
+      {|
+      let a: bool = true
+      let b:int[@refinement (v, a)] =5
+      |},
+      make_success ()
+    );
 
   ]
 

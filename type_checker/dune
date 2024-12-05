@@ -1,10 +1,5 @@
 (library
  (name checker)
- (modules type_checker)
+ (modules type_checker type_table)
  (libraries ppxlib z3))
-
-(executable
- (name main)
- (modules main)
- (libraries checker))
 

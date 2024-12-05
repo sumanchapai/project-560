@@ -6,12 +6,14 @@ let ctx = Z3.mk_context cfg;;
 
 let true_ = Boolean.mk_val ctx true
 
-type type_constraint = {
+type _type_constraint = {
   ttype: string;
   constraints: Expr.expr;
 }
 
-let type_constraints : type_constraint list ref = ref [];;
+let _type_constraints : type_constraint list ref = ref [];;
+
+let hashmap = Hashtbl.create 10;;
 
 
 (* type vartype = 
