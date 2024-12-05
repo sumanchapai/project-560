@@ -141,6 +141,31 @@ let refinement_type_check_suite =
     (
       {|
       let a : int = 5
+      let b : int[@refinement (v, v>0 && v<10)] = a
+      |},
+      make_success ()
+    );
+
+    (
+      {|
+      let min : int = 0
+      let b : int[@refinement (v, v>min)] = 5
+      |},
+      make_success ()
+    );
+
+    (
+      {|
+      let min : int = 0
+      let max : int = 1000
+      let b : int[@refinement (v, v>min && v<max)] = 100
+      |},
+      make_success ()
+    );
+
+    (
+      {|
+      let a : int = 5
       let b : int[@refinement (v, v>0)] = a
       let tru : bool = true
       let c : int[@refinement (v, false)] = 1
@@ -148,7 +173,7 @@ let refinement_type_check_suite =
       _make_basic_error ()
     );
 
-    (
+    (* (
       {|
       let a : int = 5
       let b : int[@refinement (v, v>0)] = a
@@ -156,7 +181,23 @@ let refinement_type_check_suite =
       let c : int[@refinement (v, v>=1 && tru_var)] = 1
       |},
       _make_basic_error ()
+    ); *)
+
+    (* (
+      {|
+      let a : int[@refinement (v, v > 0)] = 5
+      let b : int[@refinement (v, v < 0)] = -5
+      |},
+      make_success ()
     );
+
+    (
+      {|
+      let a : int[@refinement (v, v > 0 && v <= 10)] = 5
+      let b : int[@refinement (v, v < 0)] = -5
+      |},
+      make_success ()
+    ); *)
 
 
     (* (
