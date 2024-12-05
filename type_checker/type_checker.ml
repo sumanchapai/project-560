@@ -55,7 +55,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_add ctx [lhs_z3; rhs_z3] 
               ) 
-          |_ -> failwith "Not supported +"        
+          |_ -> failwith "Incorrectly Typed +"        
         )
         | Lident "-" -> (
           match args with
@@ -65,7 +65,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_sub ctx [lhs_z3; rhs_z3] 
               ) 
-          |_ -> failwith "Not supported -"        
+          |_ -> failwith "Incorrectly Typed -"        
         )
         | Lident "*" -> (
           match args with
@@ -75,7 +75,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_mul ctx [lhs_z3; rhs_z3] 
               ) 
-          |_ -> failwith "Not supported *"        
+          |_ -> failwith "Incorrectly Typed *"        
         )     
         | Lident "/" -> (
           match args with
@@ -85,7 +85,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_div ctx lhs_z3 rhs_z3
               ) 
-          |_ -> failwith "Not supported /"        
+          |_ -> failwith "Incorrectly Typed /"        
         )   
         | Lident "&&" -> (
           match args with
@@ -95,7 +95,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_and ctx [lhs_z3; rhs_z3]
               ) 
-          |_ -> failwith "Not supported &&"        
+          |_ -> failwith "Incorrectly Typed &&"        
         )  
         | Lident "||" -> (
           match args with
@@ -105,7 +105,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_or ctx [lhs_z3; rhs_z3]
               ) 
-          |_ -> failwith "Not supported"        
+          |_ -> failwith "Incorrectly Typed ||"        
         )
         | Lident "=" -> (
           match args with
@@ -115,7 +115,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_eq ctx lhs_z3 rhs_z3
               ) 
-          |_ -> failwith "Not supported"        
+          |_ -> failwith "Incorrectly Typed ||"        
         )           
         | Lident ">" -> (
           match args with
@@ -125,7 +125,7 @@ and convert_application_to_expr (func: expression) (args) =
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_gt ctx lhs_z3 rhs_z3
             )
-          |_ -> failwith "Not supported >"        
+          |_ -> failwith "Incorrectly Typed  >"        
         )
         | Lident "<" -> (
           match args with
@@ -138,7 +138,7 @@ and convert_application_to_expr (func: expression) (args) =
                 (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
                 temp
             )
-          |_ -> failwith "Not supported <"        
+          |_ -> failwith "Incorrectly Typed <"        
         )
         | Lident "<=" -> (
           match args with
@@ -151,24 +151,23 @@ and convert_application_to_expr (func: expression) (args) =
                 (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
                 temp
             )
-          |_ -> failwith "Not supported <="   
+          |_ -> failwith "Incorrectly Typed <="   
         )
         | Lident ">=" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing <=");
-          
+            print_endline("parsing <=");          
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 let temp = Boolean.mk_or ctx [Arithmetic.mk_gt ctx lhs_z3 rhs_z3; Boolean.mk_eq ctx lhs_z3 rhs_z3] in 
                 (* Printf.printf "Expression: %s\n" (Expr.to_string temp); *)
                 temp
             )
-          |_ -> failwith "Not supported <="        
+          |_ -> failwith "Incorrectly Typed <="        
         )
-        | _ -> failwith "Not supported operation"
+        | _ -> failwith "Not supported Operation"
       )
-      |_ -> failwith "Not Supported func desc"
+      |_ -> failwith "Invalid Refinement Predicate Syntax"
 
 
 (* let _convert_assignment_refinement_to_expr (refn: refinement) =
@@ -197,9 +196,6 @@ let is_sat (_constraints : Expr.expr list) : bool =
   let combined_constraints = Boolean.mk_and ctx _constraints in
   Solver.add solver [combined_constraints];
 
-
-  (* print_endline("calling the solver with following constraints");
-  print_endline(Solver.to_string solver); *)
   (* Check satisfiability *)
   match Solver.check solver [] with
   | Solver.SATISFIABLE ->
@@ -313,6 +309,5 @@ let type_check program =
   let vc = get_verificaiton_condition ast [] in
   match is_sat vc with  
     | true -> Ok ()
-  (* TODO: Future work: add custom error messages *)
-    | _ -> Error "failed to type check."
+    | _ -> Error "Failed to Type Check"
 
