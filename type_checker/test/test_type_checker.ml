@@ -56,12 +56,12 @@ let refinement_type_check_suite =
       {|
       let a = 5
       |},
-      make_success ()
+      make_success ()v
     ); *)
 
     (
       {|
-      let a : int[@refinement (v, v > 0)] = 5
+      let a : int[@refinement (v, v > 0 + 5)] = 5
       |},
       make_success ()
     );

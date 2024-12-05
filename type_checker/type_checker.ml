@@ -54,14 +54,18 @@ and convert_application_to_expr (func: expression) (args) =
               ) 
           |_ -> failwith "Not supported +"        
         )
+        
         | Lident ">" -> (
           match args with
-          (_, lhs_expr)::(_, rhs_expr)::[] -> 
+          (_, lhs_expr)::(_, rhs_expr)::[] -> (
             print_endline("parsing >");
-            (
+          
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
-                Arithmetic.mk_gt ctx lhs_z3 rhs_z3)
+                let temp =Arithmetic.mk_gt ctx lhs_z3 rhs_z3 in 
+                Printf.printf "Expression: %s\n" (Expr.to_string temp);
+                temp
+            )
           |_ -> failwith "Not supported >"        
         )
         | _ -> failwith "Not supported operation"
@@ -166,7 +170,7 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr =
         print_endline _lhs_var;
         print_string "auxilary_var "; 
         print_endline auxilary_var;
-        true_
+        _temp
       | _ -> failwith "Not supported" (* Some other type than simple type *)
     )
     | _ -> true_ (*No type information provided*)
@@ -188,6 +192,7 @@ let type_check program =
   let ast = Parse.implementation lexbuf in
   let vc = get_verificaiton_condition ast [] in
   Printf.printf "The number of constraints is: %d\n" (List.length vc);
+
   match is_sat vc with  
     | true -> Ok ()
   (* TODO: Future work: add custom error messages *)
