@@ -3,7 +3,7 @@ open OUnit2
 
 (* Make success/failure result types *)
 let make_success _ = Ok ()
-let _make_error err_string = Error err_string
+let make_error err_string = Error err_string
 
 let create_arith_eval_suite name cases : test =
   (* Helper function to create a test case *)
@@ -44,8 +44,14 @@ let create_refinement_suites name cases : test =
 
 let refinement_type_check_suite =
   create_refinement_suites "basics" [
+    (
+      {|
+      let a  = 5
+      |},
+      make_success ()
+    );
 
-    (* (
+    (
       {|
       let a : int = 5
       |},
@@ -54,10 +60,24 @@ let refinement_type_check_suite =
 
     (
       {|
-      let a = 5
+      let a : int[@refinement (v, v>0)] = 5
       |},
-      make_success ()v
-    ); *)
+      make_success ()
+    );
+
+    (
+      {|
+      let a : int[@refinement (v, v>=0)] = 5
+      |},
+      make_success ()
+    );
+
+    (
+      {|
+      let a : int[@refinement (v, v<=0)] = 5
+      |},
+      make_error "Failed to Type Check"
+    );
 
     (
       {|

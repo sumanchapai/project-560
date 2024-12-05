@@ -50,7 +50,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "+" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing +");
+            (* print_endline("parsing +"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_add ctx [lhs_z3; rhs_z3] 
@@ -60,7 +60,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "-" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing -");
+            (* print_endline("parsing -"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_sub ctx [lhs_z3; rhs_z3] 
@@ -70,7 +70,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "*" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing *");
+            (* print_endline("parsing *"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_mul ctx [lhs_z3; rhs_z3] 
@@ -80,7 +80,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "/" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing /");
+            (* print_endline("parsing /"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_div ctx lhs_z3 rhs_z3
@@ -90,7 +90,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "&&" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing &&");
+            (* print_endline("parsing &&"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_and ctx [lhs_z3; rhs_z3]
@@ -100,7 +100,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "||" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing ||");
+            (* print_endline("parsing ||"); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_or ctx [lhs_z3; rhs_z3]
@@ -110,7 +110,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "=" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing =");
+            (* print_endline("parsing ="); *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Boolean.mk_eq ctx lhs_z3 rhs_z3
@@ -120,7 +120,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident ">" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing >");          
+            (* print_endline("parsing >");           *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 Arithmetic.mk_gt ctx lhs_z3 rhs_z3
@@ -130,7 +130,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "<" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing <");
+            (* print_endline("parsing <"); *)
           
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
@@ -143,7 +143,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident "<=" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing <=");
+            (* print_endline("parsing <="); *)
           
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
@@ -156,7 +156,7 @@ and convert_application_to_expr (func: expression) (args) =
         | Lident ">=" -> (
           match args with
           (_, lhs_expr)::(_, rhs_expr)::[] -> (
-            print_endline("parsing <=");          
+            (* print_endline("parsing <=");           *)
                 let lhs_z3 = convert_expression_to_expr lhs_expr in
                 let rhs_z3 = convert_expression_to_expr rhs_expr in
                 let temp = Boolean.mk_or ctx [Arithmetic.mk_gt ctx lhs_z3 rhs_z3; Boolean.mk_eq ctx lhs_z3 rhs_z3] in 
@@ -201,8 +201,8 @@ let is_sat (_constraints : Expr.expr list) : bool =
   | Solver.SATISFIABLE ->
       Printf.printf "The constraints are satisfiable.\n";
       (* Print the model *)
-      let model = Solver.get_model solver |> Option.get in
-    Printf.printf "Model: %s\n" (Model.to_string model);
+      (* let model = Solver.get_model solver |> Option.get in
+    Printf.printf "Model: %s\n" (Model.to_string model); *)
     true
   | Solver.UNSATISFIABLE ->
     Printf.printf "The constraints are unsatisfiable.\n";
@@ -291,7 +291,7 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list 
         ptyp_attributes = []; _}; _} -> 
           let lhs_z3_var = create_z3_variable lhs_var base_type in
           let rhs_constraints =  Boolean.mk_eq ctx lhs_z3_var (convert_expression_to_expr rhs_exp) in
-          print_endline("DID match");
+          (* print_endline("DID match"); *)
           [rhs_constraints]
 
       | _ -> failwith "Not supported" (* Some other type than simple type *)
@@ -306,7 +306,7 @@ let rec get_verificaiton_condition (ast: Parsetree.structure) (conditions: Expr.
   match ast with 
   | [] -> conditions
   | head::tail -> let new_conds = handle_structure_item head in
-      print_endline("added new conds");
+      (* print_endline("added new conds"); *)
       get_verificaiton_condition tail (new_conds@conditions)
 
 
@@ -316,5 +316,6 @@ let type_check program =
   let vc = get_verificaiton_condition ast [] in
   match is_sat vc with  
     | true -> Ok ()
-    | _ -> Error "Failed to Type Check"
+    | _ -> print_endline("Failed to Type Check");
+    Error "Failed to Type Check"
 
