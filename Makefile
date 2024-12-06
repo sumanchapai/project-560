@@ -12,15 +12,19 @@ DEMO_FILES = fail2_int.ml \
 
 # Demo target
 demo:
-	@for file in $(DEMO_FILES); do \
+	@clear ;\
+	for file in $(DEMO_FILES); do \
 		f=$(EXAMPLES_DIR)/$$file ; \
 		echo "-----------------------" ; \
 		echo "$$f" ; \
 		echo "-----------------------" ; \
 		cat "$$f" ; \
-		echo "-----------------------" ; \
+		echo "\n-----------------------" ; \
 		dune exec type_checker/main.exe "$$f" ; \
-		echo "-----------------------" ; \
 		echo "\n\n\n " ;\
+		read line ;\
+		clear ;\
 	done
+	@echo "Thank you!\nMerry Christmas"
+	@read  line;\
 
