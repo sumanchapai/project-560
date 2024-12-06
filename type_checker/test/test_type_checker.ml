@@ -216,6 +216,23 @@ let refinement_type_check_suite =
       _make_basic_error ()
     );
 
+    (
+      {|
+      let a: bool = false
+      let b:int[@refinement (v, a && a)] =5
+      |},
+      _make_basic_error ()
+    );
+
+    (
+      {|
+      let t: bool = true
+      let f: bool = false
+      let b:int[@refinement (v, t || f)] = 5
+      |},
+      make_success ()
+    );
+
   ]
 
 
