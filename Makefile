@@ -4,8 +4,8 @@
 EXAMPLES_DIR = examples
 
 # List of demo files
-DEMO_FILES = fail_int.ml \
-			 fail2_int.ml \
+DEMO_FILES = fail2_int.ml \
+			 fail_int.ml \
              success_int.ml \
 			 success2_int.ml \
 			 success3_int.ml 

@@ -1,6 +1,6 @@
 (library
  (name checker)
- (modules type_checker type_table)
+ (modules type_checker type_table type_constraint_table)
  (libraries ppxlib z3))
 
 (executable
