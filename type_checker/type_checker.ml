@@ -1,5 +1,6 @@
 open Z3
 open Parsetree
+open Type_table
 
 let cfg = [("model", "true")];;
 let ctx = Z3.mk_context cfg;;
@@ -13,7 +14,7 @@ type _type_constraint = {
 
 let _type_constraints : type_constraint list ref = ref [];;
 
-let hashmap = Hashtbl.create 10;;
+(* let hashmap = Hashtbl.create 10;; *)
 
 
 (* type vartype = 
@@ -46,7 +47,8 @@ let rec convert_expression_to_expr (expr: expression) =
   | Pexp_ident op -> (
     match op.txt with 
     | Lident x -> 
-      let var = Expr.mk_const ctx (Symbol.mk_string ctx x) (Arithmetic.Integer.mk_sort ctx) in
+      let var = make_z3_var ctx x in
+      (* let var = Expr.mk_const ctx (Symbol.mk_string ctx x) (Arithmetic.Integer.mk_sort ctx) in *)
       var
     | _ -> failwith "Not supported Type"
     )
@@ -233,11 +235,11 @@ let get_var_from_exp (expr : expression) : string =
   |_ -> failwith "unexpected pattern" *)
 
 
-let create_z3_variable (name: string) (kind: string) = 
+let _create_z3_variable (name: string) (kind: ttypes) = 
     match kind with
-    | "int" -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Arithmetic.Integer.mk_sort ctx)
-    | "bool" -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Boolean.mk_sort ctx)
-    | _ -> failwith ("variable of type" ^ kind ^ " is not implemented")
+    | Tint -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Arithmetic.Integer.mk_sort ctx)
+    | Tbool -> Expr.mk_const ctx (Symbol.mk_string ctx name) (Boolean.mk_sort ctx)
+    (* | _ -> failwith ("variable of type" ^  (ttype_string  kind) ^ " is not implemented") *)
 
 (* let convert_type_constraints (expr: type_declaration) = () *)
 
@@ -282,9 +284,11 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list 
           Based on these things we need to generate a Z3 constraint.
           Base type might be needed as it will help you know what kind of z3 variable to create
         *)
-        
-        let lhs_z3_var = create_z3_variable lhs_var base_type in
-        let refinement_aux_var = create_z3_variable auxilary_var base_type in
+        let bttype = string_ttype base_type in
+        let _ = add_type lhs_var bttype in
+        let _ = add_type auxilary_var bttype in
+        let lhs_z3_var = make_z3_var ctx lhs_var in
+        let refinement_aux_var = make_z3_var ctx auxilary_var in
         let rhs_constraints =  Boolean.mk_eq ctx lhs_z3_var (convert_expression_to_expr rhs_exp) in
         let ref_var_eq_lhs_var_constraint = Boolean.mk_eq ctx lhs_z3_var refinement_aux_var in
         let refinement_predicate_contraint = convert_expression_to_expr refPredicate in 
@@ -300,8 +304,11 @@ let handle_structure_item (str_item: Parsetree.structure_item) : Expr.expr list 
         *)
       | Pvc_constraint {typ = {
         ptyp_desc = Ptyp_constr ({txt = Lident base_type; _}, _);
+        
         ptyp_attributes = []; _}; _} -> 
-          let lhs_z3_var = create_z3_variable lhs_var base_type in
+          let bttype = string_ttype base_type in
+          let _ = add_type lhs_var bttype in
+          let lhs_z3_var = make_z3_var ctx lhs_var in
           let rhs_constraints =  Boolean.mk_eq ctx lhs_z3_var (convert_expression_to_expr rhs_exp) in
           (* print_endline("DID match"); *)
           [rhs_constraints]
