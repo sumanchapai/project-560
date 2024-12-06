@@ -18,9 +18,12 @@ demo:
 		echo "$$f" ; \
 		echo "-----------------------" ; \
 		cat "$$f" ; \
-		echo "-----------------------" ; \
+		echo "\n-----------------------" ; \
 		dune exec type_checker/main.exe "$$f" ; \
-		echo "-----------------------" ; \
 		echo "\n\n\n " ;\
+		read line ;\
+		clear ;\
 	done
+	@echo "Thank you!\nMerry Christmas"
+	@read  line;\
 
