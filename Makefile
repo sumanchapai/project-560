@@ -12,7 +12,8 @@ DEMO_FILES = fail_int.ml \
 
 # Demo target
 demo:
-	@for file in $(DEMO_FILES); do \
+	@clear ;\
+	for file in $(DEMO_FILES); do \
 		f=$(EXAMPLES_DIR)/$$file ; \
 		echo "-----------------------" ; \
 		echo "$$f" ; \
