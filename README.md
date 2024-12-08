@@ -17,8 +17,15 @@ Run tests
 opam exec -- dune runtest
 ```
 
-Demo:
+To run the type checker with some demo examples:
 
 ```/bin/bash
 make demo
 ```
+
+To run the type checker with your example file:
+
+```/bin/bash
+make custom
+```
+Then provide the file path
