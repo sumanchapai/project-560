@@ -11,6 +11,20 @@ DEMO_FILES =  success0_int.ml\
 			 success2_int.ml \
 			 success3_int.ml 
 
+# Custom target
+custom:
+	@read -p "Enter program file:" filepath;\
+		f="$$filepath" ; \
+		echo "-----------------------" ; \
+		echo "$$f" ; \
+		echo "-----------------------" ; \
+		cat "$$f" ; \
+		echo "\n-----------------------" ; \
+		dune exec type_checker/main.exe "$$f" ; \
+		echo "\n\n\n " ;\
+		read line;\
+		clear ;\
+
 # Demo target
 demo:
 	@clear ;\
