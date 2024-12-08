@@ -1,4 +1,4 @@
-#Refinement Type Checker for OCaml
+# Refinement Type Checker for OCaml
 
 ## Steps to Run:
 
