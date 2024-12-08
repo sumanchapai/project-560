@@ -1,4 +1,6 @@
-**Development**
+#Refinement Type Checker for OCaml
+
+## Steps to Run:
 
 Install dependencies
 
@@ -15,4 +17,8 @@ Run tests
 opam exec -- dune runtest
 ```
 
-Run `make demo` for demo
+Demo:
+
+```/bin/bash
+make demo
+```
